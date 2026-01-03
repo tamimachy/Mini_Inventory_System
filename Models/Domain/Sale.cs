@@ -9,5 +9,8 @@
         public decimal PaidAmount { get; set; }
         public decimal DueAmount { get; set; }
         List<Product> SaleDetails { get; set; }
+        public Product ProductId { get; set; }
+        public decimal Quantity { get; set; }
+        public decimal Price { get; set; }
     }
 }
