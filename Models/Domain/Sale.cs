@@ -1,4 +1,6 @@
-﻿namespace Mini_Inventory_System.Models.Domain
+﻿using Mini_Inventory_System.Models.DTO;
+
+namespace Mini_Inventory_System.Models.Domain
 {
     public class Sale
     {
@@ -9,16 +11,19 @@
         public decimal TotalAmount { get; set; }
         public decimal PaidAmount { get; set; }
         public decimal DueAmount { get; set; }
-        public class SaleDetail
-        {
-            public int SaleDetailId { get; set; }
-            public int SaleId { get; set; }
-            public Sale Sale { get; set; }
-            public int ProductId { get; set; }
-            public Product Product { get; set; }
-            public decimal Quantity { get; set; }
-            public decimal Price { get; set; }
-        }
-        
+        public List<SaleDetail> SaleDetails { get; set; } = new();
+        public List<SaleDetailDto> SaleDetailDto { get; internal set; }
+    }
+    public class SaleDetail
+    {
+        public int SaleDetailId { get; set; }
+        public int SaleId { get; set; }
+        public Sale Sale { get; set; }
+        public int ProductId { get; set; }
+        public Product Product { get; set; }
+        public decimal Quantity { get; set; }
+        public decimal Price { get; set; }
     }
 }
+
+
