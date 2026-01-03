@@ -5,7 +5,7 @@ namespace Mini_Inventory_System.Data
 {
     public class InventoryDbContext : DbContext
     {
-        public InventoryDbContext(DbContextOptions<InventoryDbContext> dbContextOptions) : base(dbContextOptions)
+        public InventoryDbContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
         {
 
         }
