@@ -11,6 +11,6 @@ namespace Mini_Inventory_System.Models.DTO
         public decimal TotalAmount { get; set; }
         public decimal PaidAmount { get; set; }
         public decimal DueAmount { get; set; }
-        public List<SaleDetailDto> SaleDetails { get; set; } = new();
+        public List<SaleDetail> SaleDetails { get; set; } = new();
     }
 }

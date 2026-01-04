@@ -37,7 +37,7 @@ namespace Mini_Inventory_System.Controllers
                     TotalAmount = sale.TotalAmount,
                     PaidAmount = sale.PaidAmount,
                     DueAmount = sale.DueAmount,
-                    SaleDetails = sale.SaleDetailDto
+                    SaleDetails = sale.SaleDetails
                 });
             }
             // Return DTOs
@@ -65,7 +65,7 @@ namespace Mini_Inventory_System.Controllers
                 TotalAmount = saleDomain.TotalAmount,
                 PaidAmount = saleDomain.PaidAmount,
                 DueAmount = saleDomain.DueAmount,
-                SaleDetails = saleDomain.SaleDetailDto
+                SaleDetails = saleDomain.SaleDetails
             };
             return Ok(saleDto);
         }
@@ -87,7 +87,7 @@ namespace Mini_Inventory_System.Controllers
             // Use Domain Model to create Sale
             _inventoryDb.Sales.Add(saleDomainModel);
             _inventoryDb.SaveChanges();
-
+            
             // Map Domain Model to back to Dto          
             var saleDto = new SaleDto
             {
@@ -98,7 +98,7 @@ namespace Mini_Inventory_System.Controllers
                 TotalAmount = saleDomainModel.TotalAmount,
                 PaidAmount = saleDomainModel.PaidAmount,
                 DueAmount = saleDomainModel.DueAmount,
-                SaleDetails = saleDomainModel.SaleDetailDto
+                SaleDetails = saleDomainModel.SaleDetails
             };
             return CreatedAtAction(nameof(GetById), new { id = saleDto.SaleId }, saleDto);
         }
