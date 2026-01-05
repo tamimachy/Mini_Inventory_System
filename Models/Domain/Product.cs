@@ -12,5 +12,6 @@ namespace Mini_Inventory_System.Models.Domain
         public Decimal StockQty { get; set; }
         public string Category { get; set; }
         public bool Status { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

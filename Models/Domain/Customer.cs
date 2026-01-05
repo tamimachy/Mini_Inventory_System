@@ -9,5 +9,6 @@ namespace Mini_Inventory_System.Models.Domain
         public string Phone { get; set; }
         public string Email { get; set; }
         public int LoyaltyPoints { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }
