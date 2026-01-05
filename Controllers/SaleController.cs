@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Mini_Inventory_System.Data;
 using Mini_Inventory_System.Models.Domain;
@@ -6,101 +7,66 @@ using Mini_Inventory_System.Models.DTO;
 
 namespace Mini_Inventory_System.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SaleController : ControllerBase
     {
-        private readonly InventoryDbContext _inventoryDb;
+        private readonly InventoryDbContext _dbContext;
+        private static SemaphoreSlim _semaphore = new SemaphoreSlim(3);
+
 
         public SaleController(InventoryDbContext inventoryDb)
         {
-            this._inventoryDb = inventoryDb;
+            this._dbContext = inventoryDb;
         }
 
-        // GET ALL Sales Data
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            // Get Data from database - domain model
-            var salesDomain = _inventoryDb.Sales.ToList();
-
-            // Map Domain Models to DTOs
-            var saleDto = new List<SaleDto> ();
-            foreach(var sale in salesDomain)
-            {
-                saleDto.Add(new SaleDto()
-                {
-                    SaleId = sale.SaleId,
-                    SaleDate = sale.SaleDate,
-                    CustomerId = sale.CustomerId,
-                    Customer = sale.Customer,
-                    TotalAmount = sale.TotalAmount,
-                    PaidAmount = sale.PaidAmount,
-                    DueAmount = sale.DueAmount,
-                    SaleDetails = sale.SaleDetails
-                });
-            }
-            // Return DTOs
-            return Ok(saleDto);
-        }
-
-        // GET SINGLE Sale Data
-        [HttpGet]
-        [Route("{id:int}")]
-        public IActionResult GetById([FromRoute] int id)
-        {
-            // Get Region Domain Model to Database
-            var saleDomain = _inventoryDb.Sales.FirstOrDefault(x=>x.SaleId == id);
-            if(saleDomain == null)
-            {
-                return NotFound();
-            }
-            // Map/Convert Sale Domain Model to Sale DTO 
-            var saleDto = new SaleDto
-            {
-                SaleId = saleDomain.SaleId,
-                SaleDate = saleDomain.SaleDate,
-                CustomerId = saleDomain.CustomerId,
-                Customer = saleDomain.Customer,
-                TotalAmount = saleDomain.TotalAmount,
-                PaidAmount = saleDomain.PaidAmount,
-                DueAmount = saleDomain.DueAmount,
-                SaleDetails = saleDomain.SaleDetails
-            };
-            return Ok(saleDto);
-        }
-
-        // POST Method to create new Sale Data
+        // Create Method
         [HttpPost]
-        public IActionResult Create([FromBody] AddSaleRequestDto addSaleRequest)
+        public async Task<IActionResult> Create(CreateSaleDto createSaleDto)
         {
-            // Map or Convert DTO to Domain Model
-            var saleDomainModel = new Sale
+            if(!await _semaphore.WaitAsync(0))
             {
-                SaleDate = addSaleRequest.SaleDate,
-                CustomerId = addSaleRequest.CustomerId,
-                TotalAmount = addSaleRequest.TotalAmount,
-                PaidAmount = addSaleRequest.PaidAmount,
-                DueAmount = addSaleRequest.DueAmount,
-            };
+                return StatusCode(429, "Too many requests");
+            }
+            try
+            {
+                await Task.Delay(3000);
+                decimal total = 0;
+                var saleDetails = new List<SaleDetail>();
+                foreach(var item in createSaleDto.SaleDetails)
+                {
+                    var product = _dbContext.Products.Find(item.ProductId);
+                    if(product.StockQty < item.Quantity)
+                    {
+                        return BadRequest("Insufficient stock");
+                    }
+                    product.StockQty -= item.Quantity;
+                    total += item.Quantity * item.Price;
+                    saleDetails.Add(new SaleDetail { 
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                        Price = item.Price,
+                    });
+                }
+                var sale = new Sale
+                {
+                    SaleDate = DateTime.Now,
+                    CustomerId = createSaleDto.CustomerId,
+                    TotalAmount = total,
+                    PaidAmount = createSaleDto.PaidAmount,
+                    DueAmount = total - createSaleDto.PaidAmount,
+                    SaleDetails = saleDetails
+                };
+                _dbContext.Sales.Add(sale);
+                await _dbContext.SaveChangesAsync();
+                return Ok(sale);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
 
-            // Use Domain Model to create Sale
-            _inventoryDb.Sales.Add(saleDomainModel);
-            _inventoryDb.SaveChanges();
-            
-            // Map Domain Model to back to Dto          
-            var saleDto = new SaleDto
-            {
-                SaleId = saleDomainModel.SaleId,
-                SaleDate = saleDomainModel.SaleDate,
-                CustomerId = saleDomainModel.CustomerId,
-                Customer = saleDomainModel.Customer,
-                TotalAmount = saleDomainModel.TotalAmount,
-                PaidAmount = saleDomainModel.PaidAmount,
-                DueAmount = saleDomainModel.DueAmount,
-                SaleDetails = saleDomainModel.SaleDetails
-            };
-            return CreatedAtAction(nameof(GetById), new { id = saleDto.SaleId }, saleDto);
         }
     }
 }
