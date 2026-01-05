@@ -9,5 +9,5 @@
         public string Category { get; set; }
         public bool Status { get; set; }
     }
-    public class UpdateProduct: CreateProductDto { }
+    public class UpdateProductDto : CreateProductDto { }
 }
