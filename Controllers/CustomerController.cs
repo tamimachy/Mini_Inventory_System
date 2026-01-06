@@ -20,7 +20,7 @@ namespace Mini_Inventory_System.Controllers
 
         //CREATE Method
         [HttpPost]
-        public IActionResult Create(CreateCustomerDto createCustomerDto)
+        public IActionResult Create([FromBody] CreateCustomerDto createCustomerDto)
         {
             var customer = new Customer
             {

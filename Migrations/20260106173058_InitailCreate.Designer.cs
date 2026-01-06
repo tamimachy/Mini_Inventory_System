@@ -12,8 +12,8 @@ using Mini_Inventory_System.Data;
 namespace Mini_Inventory_System.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    [Migration("20260105152425_SaleDetalisAdd")]
-    partial class SaleDetalisAdd
+    [Migration("20260106173058_InitailCreate")]
+    partial class InitailCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -126,7 +126,7 @@ namespace Mini_Inventory_System.Migrations
                     b.ToTable("Sales");
                 });
 
-            modelBuilder.Entity("Mini_Inventory_System.Models.Domain.SaleDetail", b =>
+            modelBuilder.Entity("SaleDetail", b =>
                 {
                     b.Property<int>("SaleDetailId")
                         .ValueGeneratedOnAdd()
@@ -143,7 +143,7 @@ namespace Mini_Inventory_System.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("SaleId")
+                    b.Property<int>("SaleId")
                         .HasColumnType("int");
 
                     b.HasKey("SaleDetailId");
@@ -162,11 +162,15 @@ namespace Mini_Inventory_System.Migrations
                     b.Navigation("Customer");
                 });
 
-            modelBuilder.Entity("Mini_Inventory_System.Models.Domain.SaleDetail", b =>
+            modelBuilder.Entity("SaleDetail", b =>
                 {
-                    b.HasOne("Mini_Inventory_System.Models.Domain.Sale", null)
+                    b.HasOne("Mini_Inventory_System.Models.Domain.Sale", "Sale")
                         .WithMany("SaleDetails")
-                        .HasForeignKey("SaleId");
+                        .HasForeignKey("SaleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sale");
                 });
 
             modelBuilder.Entity("Mini_Inventory_System.Models.Domain.Sale", b =>

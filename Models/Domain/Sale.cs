@@ -11,7 +11,7 @@ namespace Mini_Inventory_System.Models.Domain
         public decimal TotalAmount { get; set; }
         public decimal PaidAmount { get; set; }
         public decimal DueAmount { get; set; }
-        public ICollection<SaleDetail> SaleDetails { get; set; } 
+        public ICollection<SaleDetail> SaleDetails { get; set; }
     }
 }
 

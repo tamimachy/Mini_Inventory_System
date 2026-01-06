@@ -23,7 +23,7 @@ namespace Mini_Inventory_System.Controllers
 
         // Create Method
         [HttpPost]
-        public async Task<IActionResult> Create(CreateSaleDto createSaleDto)
+        public async Task<IActionResult> Create([FromBody] CreateSaleDto createSaleDto)
         {
             if(!await _semaphore.WaitAsync(0))
             {
@@ -66,7 +66,20 @@ namespace Mini_Inventory_System.Controllers
             {
                 _semaphore.Release();
             }
+        }
 
+        // Sale Report 
+        [HttpGet("report")]
+        public IActionResult SalesReport(DateTime from, DateTime to)
+        {
+            var sales = _dbContext.Sales
+                .Where(s => s.SaleDate >= from && s.SaleDate <= to);
+            return Ok(new
+            {
+                TotalSale = sales.Count(),
+                TotalRevenue = sales.Sum(s => s.TotalAmount),
+                Transactions = sales.Count()
+            });
         }
     }
 }
