@@ -33,8 +33,9 @@ namespace Mini_Inventory_System.Controllers
             _dbContext.SaveChanges();
             return Ok(customer);
         }
-        
+
         // GET ALL Method
+        [HttpGet]
         public IActionResult GetAll()
         {
             return Ok(_dbContext.Customers.Where(c=>!c.IsDeleted).ToList());
