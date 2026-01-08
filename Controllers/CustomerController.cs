@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Mini_Inventory_System.Data;
 using Mini_Inventory_System.Models.Domain;
 using Mini_Inventory_System.Models.DTO;
@@ -20,7 +21,7 @@ namespace Mini_Inventory_System.Controllers
 
         //CREATE Method
         [HttpPost]
-        public IActionResult Create([FromBody] CreateCustomerDto createCustomerDto)
+        public async Task<IActionResult> Create([FromBody] CreateCustomerDto createCustomerDto)
         {
             var customer = new Customer
             {
@@ -29,27 +30,27 @@ namespace Mini_Inventory_System.Controllers
                 Email = createCustomerDto.Email,
                 LoyaltyPoints = createCustomerDto.LoyaltyPoints
             };
-            _dbContext.Customers.Add(customer);
-            _dbContext.SaveChanges();
+            await _dbContext.Customers.AddAsync(customer);
+            _dbContext.SaveChangesAsync();
             return Ok(customer);
         }
 
         // GET ALL Method
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return Ok(_dbContext.Customers.Where(c=>!c.IsDeleted).ToList());
+            return Ok(await _dbContext.Customers.Where(c=>!c.IsDeleted).ToListAsync());
         }
 
         // DELETE
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id) 
+        public async Task<IActionResult> Delete(int id) 
         {
-            var customer = _dbContext.Customers.Find(id);
+            var customer = await _dbContext.Customers.FindAsync(id);
             if (customer == null)
                 return NotFound();
             customer.IsDeleted = true;
-            _dbContext.SaveChanges();
+            _dbContext.SaveChangesAsync();
             return Ok();
         }
     }

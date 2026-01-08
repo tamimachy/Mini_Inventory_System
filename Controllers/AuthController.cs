@@ -20,7 +20,7 @@ namespace Mini_Inventory_System.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login(LoginDto dto)
+        public async Task<IActionResult> Login(LoginDto dto)
         {
             if (dto.Username == "admin" && dto.Password == "admin123")
             {

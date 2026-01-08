@@ -70,7 +70,7 @@ namespace Mini_Inventory_System.Controllers
 
         // Sale Report 
         [HttpGet("report")]
-        public IActionResult SalesReport(DateTime from, DateTime to)
+        public async Task<IActionResult> SalesReport(DateTime from, DateTime to)
         {
             var sales = _dbContext.Sales
                 .Where(s => s.SaleDate >= from && s.SaleDate <= to);
