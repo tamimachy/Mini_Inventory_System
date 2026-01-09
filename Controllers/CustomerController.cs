@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Mini_Inventory_System.Data;
 using Mini_Inventory_System.Models.Domain;
 using Mini_Inventory_System.Models.DTO;
+using Mini_Inventory_System.Repositories;
 
 namespace Mini_Inventory_System.Controllers
 {
@@ -14,9 +15,12 @@ namespace Mini_Inventory_System.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly InventoryDbContext _dbContext;
-        public CustomerController(InventoryDbContext dbContext)
+        private readonly ICustomerRepository customerRepository;
+
+        public CustomerController(InventoryDbContext dbContext, ICustomerRepository customerRepository)
         {
             _dbContext = dbContext;
+            this.customerRepository = customerRepository;
         }
 
         //CREATE Method
@@ -39,6 +43,7 @@ namespace Mini_Inventory_System.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            var customers = await customerRepository.GetAllCustomersAsync();
             return Ok(await _dbContext.Customers.Where(c=>!c.IsDeleted).ToListAsync());
         }
 
