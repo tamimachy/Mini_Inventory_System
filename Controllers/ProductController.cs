@@ -8,7 +8,7 @@ using Mini_Inventory_System.Models.DTO;
 
 namespace Mini_Inventory_System.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductController : ControllerBase
@@ -21,7 +21,7 @@ namespace Mini_Inventory_System.Controllers
 
         // CREATE Method
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateProductDto createProductDto)
+        public IActionResult Create([FromBody] CreateProductDto createProductDto)
         {
             var product = new Product
             {
@@ -32,22 +32,22 @@ namespace Mini_Inventory_System.Controllers
                 Category = createProductDto.Category,
                 Status = createProductDto.Status,
             };
-            await _dbContext.Products.AddAsync(product);
-            _dbContext.SaveChangesAsync();
+            _dbContext.Products.Add(product);
+            _dbContext.SaveChanges();
             return Ok(product);
         }
         // GET ALL Method
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public IActionResult GetAll()
         {
-            return Ok(await _dbContext.Products.Where(p=> !p.IsDeleted).ToListAsync());
+            return Ok(_dbContext.Products.Where(p=> !p.IsDeleted).ToList());
         }
 
         // UPDATE Method
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, UpdateProductDto updateProductDto)
+        public IActionResult Update(int id, UpdateProductDto updateProductDto)
         {
-            var product = await _dbContext.Products.FindAsync(id);
+            var product = _dbContext.Products.Find(id);
             if (product == null)
                 return NotFound();
             product.Name = updateProductDto.Name;
@@ -56,19 +56,19 @@ namespace Mini_Inventory_System.Controllers
             product.Category = updateProductDto.Category;
             product.Status = updateProductDto.Status;
 
-            _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
             return Ok(product);
         }
 
         // DELETE Method
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public IActionResult Delete(int id)
         {
-            var product = await _dbContext.Products.FindAsync(id);
+            var product = _dbContext.Products.Find(id);
             if(product == null) 
                 return NotFound();
             product.IsDeleted = true;
-            _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
             return Ok();
         }
     }

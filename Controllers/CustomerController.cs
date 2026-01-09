@@ -9,7 +9,7 @@ using Mini_Inventory_System.Repositories;
 
 namespace Mini_Inventory_System.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CustomerController : ControllerBase
@@ -25,7 +25,7 @@ namespace Mini_Inventory_System.Controllers
 
         //CREATE Method
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateCustomerDto createCustomerDto)
+        public IActionResult Create([FromBody] CreateCustomerDto createCustomerDto)
         {
             var customer = new Customer
             {
@@ -34,28 +34,28 @@ namespace Mini_Inventory_System.Controllers
                 Email = createCustomerDto.Email,
                 LoyaltyPoints = createCustomerDto.LoyaltyPoints
             };
-            await _dbContext.Customers.AddAsync(customer);
-            _dbContext.SaveChangesAsync();
+            _dbContext.Customers.Add(customer);
+            _dbContext.SaveChanges();
             return Ok(customer);
         }
 
         // GET ALL Method
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public IActionResult GetAll()
         {
-            var customers = await customerRepository.GetAllCustomersAsync();
-            return Ok(await _dbContext.Customers.Where(c=>!c.IsDeleted).ToListAsync());
+            //var customers = await customerRepository.GetAllCustomersAsync();
+            return Ok(_dbContext.Customers.Where(c=>!c.IsDeleted).ToList());
         }
 
         // DELETE
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id) 
+        public IActionResult Delete(int id) 
         {
-            var customer = await _dbContext.Customers.FindAsync(id);
+            var customer =  _dbContext.Customers.Find(id);
             if (customer == null)
                 return NotFound();
             customer.IsDeleted = true;
-            _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
             return Ok();
         }
     }

@@ -7,59 +7,62 @@ using Mini_Inventory_System.Models.DTO;
 
 namespace Mini_Inventory_System.Controllers
 {
-    [Authorize]
-    [Route("api/[controller]")]
+    //[Authorize]
     [ApiController]
-    public class SaleController : ControllerBase
+    [Route("api/sales")]
+    public class SalesController : ControllerBase
     {
         private readonly InventoryDbContext _dbContext;
         private static SemaphoreSlim _semaphore = new SemaphoreSlim(3);
 
-
-        public SaleController(InventoryDbContext inventoryDb)
+        public SalesController(InventoryDbContext dbContext)
         {
-            this._dbContext = inventoryDb;
+            _dbContext = dbContext;
         }
 
-        // Create Method
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateSaleDto createSaleDto)
+        public async Task<IActionResult> CreateSale(CreateSaleDto dto)
         {
-            if(!await _semaphore.WaitAsync(0))
-            {
+            if (!await _semaphore.WaitAsync(0))
                 return StatusCode(429, "Too many requests");
-            }
+
             try
             {
                 await Task.Delay(3000);
+
                 decimal total = 0;
                 var saleDetails = new List<SaleDetail>();
-                foreach(var item in createSaleDto.SaleDetails)
+
+                foreach (var item in dto.SaleDetails)
                 {
                     var product = _dbContext.Products.Find(item.ProductId);
-                    if(product.StockQty < item.Quantity)
-                    {
+                    if (product.StockQty < item.Quantity)
                         return BadRequest("Insufficient stock");
-                    }
+
                     product.StockQty -= item.Quantity;
                     total += item.Quantity * item.Price;
-                    saleDetails.Add(new SaleDetail { 
+
+                    saleDetails.Add(new SaleDetail
+                    {
                         ProductId = item.ProductId,
                         Quantity = item.Quantity,
-                        Price = item.Price,
+                        Price = item.Price
                     });
                 }
+
                 var sale = new Sale
                 {
                     SaleDate = DateTime.Now,
-                    CustomerId = createSaleDto.CustomerId,
+                    CustomerId = dto.CustomerId,
                     TotalAmount = total,
-                    PaidAmount = createSaleDto.PaidAmount,
-                    DueAmount = total - createSaleDto.PaidAmount,
+                    PaidAmount = dto.PaidAmount,
+                    DueAmount = total - dto.PaidAmount,
                     SaleDetails = saleDetails
                 };
+
                 _dbContext.Sales.Add(sale);
                 await _dbContext.SaveChangesAsync();
+
                 return Ok(sale);
             }
             finally
@@ -70,7 +73,7 @@ namespace Mini_Inventory_System.Controllers
 
         // Sale Report 
         [HttpGet("report")]
-        public async Task<IActionResult> SalesReport(DateTime from, DateTime to)
+        public IActionResult SalesReport(DateTime from, DateTime to)
         {
             var sales = _dbContext.Sales
                 .Where(s => s.SaleDate >= from && s.SaleDate <= to);
