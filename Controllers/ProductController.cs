@@ -8,7 +8,7 @@ using Mini_Inventory_System.Models.DTO;
 
 namespace Mini_Inventory_System.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductController : ControllerBase

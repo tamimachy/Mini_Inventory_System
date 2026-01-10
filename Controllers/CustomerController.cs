@@ -9,7 +9,7 @@ using Mini_Inventory_System.Repositories;
 
 namespace Mini_Inventory_System.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CustomerController : ControllerBase
@@ -34,7 +34,7 @@ namespace Mini_Inventory_System.Controllers
                 Email = createCustomerDto.Email,
                 LoyaltyPoints = createCustomerDto.LoyaltyPoints
             };
-            _dbContext.Customers.Add(customer);
+             _dbContext.Customers.Add(customer);
             _dbContext.SaveChanges();
             return Ok(customer);
         }
@@ -44,7 +44,8 @@ namespace Mini_Inventory_System.Controllers
         public IActionResult GetAll()
         {
             //var customers = await customerRepository.GetAllCustomersAsync();
-            return Ok(_dbContext.Customers.Where(c=>!c.IsDeleted).ToList());
+            var allCustomer = _dbContext.Customers.Where(c => !c.IsDeleted).ToList();
+            return Ok(allCustomer);
         }
 
         // DELETE
