@@ -60,7 +60,7 @@ namespace Mini_Inventory_System.Controllers
                     SaleDetails = saleDetails
                 };
 
-                _dbContext.Sales.Add(sale);
+                await _dbContext.Sales.AddAsync(sale);
                 await _dbContext.SaveChangesAsync();
 
                 return Ok(sale);
@@ -77,12 +77,13 @@ namespace Mini_Inventory_System.Controllers
         {
             var sales = _dbContext.Sales
                 .Where(s => s.SaleDate >= from && s.SaleDate <= to);
-            return Ok(new
+            var result = new
             {
                 TotalSale = sales.Count(),
                 TotalRevenue = sales.Sum(s => s.TotalAmount),
                 Transactions = sales.Count()
-            });
+            }; 
+            return Ok(result);
         }
     }
 }
