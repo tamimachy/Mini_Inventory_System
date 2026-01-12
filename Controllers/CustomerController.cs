@@ -6,6 +6,7 @@ using Mini_Inventory_System.Data;
 using Mini_Inventory_System.Models.Domain;
 using Mini_Inventory_System.Models.DTO;
 using Mini_Inventory_System.Repositories;
+using System.Threading.Tasks;
 
 namespace Mini_Inventory_System.Controllers
 {
@@ -15,48 +16,51 @@ namespace Mini_Inventory_System.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly InventoryDbContext _dbContext;
-        private readonly ICustomerRepository customerRepository;
+        private readonly ICustomerRepository _customerRepository;
 
         public CustomerController(InventoryDbContext dbContext, ICustomerRepository customerRepository)
         {
             _dbContext = dbContext;
-            this.customerRepository = customerRepository;
+            _customerRepository = customerRepository;
         }
 
         //CREATE Method
         [HttpPost]
-        public IActionResult Create([FromBody] CreateCustomerDto createCustomerDto)
+        public async Task<IActionResult> Create([FromBody] Customer customer)
         {
-            var customer = new Customer
+            var customerDomain = new Customer
             {
-                FullName = createCustomerDto.FullName,
-                Phone = createCustomerDto.Phone,
-                Email = createCustomerDto.Email,
-                LoyaltyPoints = createCustomerDto.LoyaltyPoints
+                FullName = customer.FullName,
+                Phone = customer.Phone,
+                Email = customer.Email,
+                LoyaltyPoints = customer.LoyaltyPoints
             };
-             _dbContext.Customers.Add(customer);
-            _dbContext.SaveChanges();
+
+            // Use Repository to create customer
+            await _customerRepository.CreateCustomerAsync(customerDomain);
+            await _dbContext.SaveChangesAsync();
+
             return Ok(customer);
         }
 
         // GET ALL Method
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            //var customers = await customerRepository.GetAllCustomersAsync();
-            var allCustomer = _dbContext.Customers.Where(c => !c.IsDeleted).ToList();
-            return Ok(allCustomer);
+            var customers = await _customerRepository.GetAllCustomersAsync();
+            //var allCustomer = _dbContext.Customers.Where(c => !c.IsDeleted).ToList();
+            return Ok(customers);
         }
 
         // DELETE
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id) 
+        public async Task<IActionResult> Delete([FromRoute] int id) 
         {
-            var customer =  _dbContext.Customers.Find(id);
-            if (customer == null)
+            var customerDomainModel = await _customerRepository.DeleteCustomerAsync(id);
+            if (customerDomainModel == null)
                 return NotFound();
-            customer.IsDeleted = true;
-            _dbContext.SaveChanges();
+            customerDomainModel.IsDeleted = true;
+            await _dbContext.SaveChangesAsync();
             return Ok();
         }
     }

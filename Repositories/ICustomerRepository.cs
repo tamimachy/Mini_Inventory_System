@@ -5,8 +5,8 @@ namespace Mini_Inventory_System.Repositories
 {
     public interface ICustomerRepository
     {
-        Task<Customer> CreateCustomerAsync(CreateCustomerDto createCustomerDto);
+        Task<Customer> CreateCustomerAsync(Customer customer);
         Task<IEnumerable<Customer>> GetAllCustomersAsync();
-        Task<bool> DeleteCustomerAsync(int id);
+        Task<Customer?> DeleteCustomerAsync(int id);
     }
 }

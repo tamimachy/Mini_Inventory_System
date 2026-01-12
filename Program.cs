@@ -20,8 +20,8 @@ builder.Services.AddControllers()
 builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
-
-builder.Services.AddScoped<ICustomerRepository, SQLCustomerRepository>();
+// Repository 
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
