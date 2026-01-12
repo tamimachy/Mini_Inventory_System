@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Mini_Inventory_System.Data;
 using Mini_Inventory_System.Models.Domain;
 using Mini_Inventory_System.Models.DTO;
+using Mini_Inventory_System.Repositories;
 
 namespace Mini_Inventory_System.Controllers
 {
@@ -14,16 +15,19 @@ namespace Mini_Inventory_System.Controllers
     public class ProductController : ControllerBase
     {
         private readonly InventoryDbContext _dbContext;
-        public ProductController(InventoryDbContext dbContext)
+        private readonly IProductRepository _productRepository;
+
+        public ProductController(InventoryDbContext dbContext, IProductRepository productRepository)
         {
             _dbContext = dbContext;
+            _productRepository = productRepository;
         }
 
         // CREATE Method
         [HttpPost]
-        public IActionResult Create([FromBody] CreateProductDto createProductDto)
+        public async Task<IActionResult> Create([FromBody] CreateProductDto createProductDto)
         {
-            var product = new Product
+            var productDomain = new Product
             {
                 Name = createProductDto.Name,
                 Barcode = createProductDto.Barcode,
@@ -32,43 +36,51 @@ namespace Mini_Inventory_System.Controllers
                 Category = createProductDto.Category,
                 Status = createProductDto.Status,
             };
-            _dbContext.Products.Add(product);
-            _dbContext.SaveChanges();
-            return Ok(product);
+            // Use Repository to create product
+            await _productRepository.CreateProductAsync(productDomain);
+            return Ok(productDomain);
         }
         // GET ALL Method
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return Ok(_dbContext.Products.Where(p=> !p.IsDeleted).ToList());
+            var product = await _productRepository.GetAllProductsAsync();
+            //var allProduct = _dbContext.Products.Where(p=> !p.IsDeleted).ToList();
+            return Ok(product);
         }
 
         // UPDATE Method
         [HttpPut("{id}")]
-        public IActionResult Update(int id, UpdateProductDto updateProductDto)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateProductDto updateProductDto)
         {
-            var product = _dbContext.Products.Find(id);
-            if (product == null)
+            // Map DTO to Domain Model
+            var productDomainModel = new Product
+            {
+                Name = updateProductDto.Name,
+                Barcode = updateProductDto.Barcode,
+                Price = updateProductDto.Price,
+                StockQty = updateProductDto.StockQty,
+                Category = updateProductDto.Category,
+                Status = updateProductDto.Status
+            };
+            // Use Repository to update product
+            var updateProduct = await _productRepository.UpdateProductAsync(id,productDomainModel);
+            if (updateProduct == null)
+            {
                 return NotFound();
-            product.Name = updateProductDto.Name;
-            product.Price = updateProductDto.Price;
-            product.StockQty = updateProductDto.StockQty;
-            product.Category = updateProductDto.Category;
-            product.Status = updateProductDto.Status;
-
-            _dbContext.SaveChanges();
-            return Ok(product);
+            }
+            return Ok(updateProduct);
         }
 
         // DELETE Method
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var product = _dbContext.Products.Find(id);
-            if(product == null) 
+            var productDomain = await _productRepository.DeleteProductAsync(id);
+            if(productDomain == null) 
                 return NotFound();
-            product.IsDeleted = true;
-            _dbContext.SaveChanges();
+            productDomain.IsDeleted = true;
+            await _dbContext.SaveChangesAsync();
             return Ok();
         }
     }

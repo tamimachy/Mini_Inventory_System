@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mini_Inventory_System.Models.Domain
 {
     [Index(nameof(Barcode), IsUnique = true)]
     public class Product
     {
+        [Key]
         public int ProductId { get; set; }
         public string Name { get; set; }
         public string Barcode { get; set; }

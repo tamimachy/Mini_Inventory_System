@@ -22,6 +22,7 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
 );
 // Repository 
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
