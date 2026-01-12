@@ -7,6 +7,7 @@ namespace Mini_Inventory_System.Repositories
     {
         Task<Customer> CreateCustomerAsync(Customer customer);
         Task<IEnumerable<Customer>> GetAllCustomersAsync();
+        Task<Customer?> UpdateCustomerAsync(int id, Customer customer);
         Task<Customer?> DeleteCustomerAsync(int id);
     }
 }

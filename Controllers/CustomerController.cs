@@ -26,21 +26,19 @@ namespace Mini_Inventory_System.Controllers
 
         //CREATE Method
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Customer customer)
+        public async Task<IActionResult> Create([FromBody] CreateCustomerDto createCustomerDto)
         {
             var customerDomain = new Customer
             {
-                FullName = customer.FullName,
-                Phone = customer.Phone,
-                Email = customer.Email,
-                LoyaltyPoints = customer.LoyaltyPoints
+                FullName = createCustomerDto.FullName,
+                Phone = createCustomerDto.Phone,
+                Email = createCustomerDto.Email,
+                LoyaltyPoints = createCustomerDto.LoyaltyPoints
             };
 
             // Use Repository to create customer
             await _customerRepository.CreateCustomerAsync(customerDomain);
-            await _dbContext.SaveChangesAsync();
-
-            return Ok(customer);
+            return Ok(customerDomain);
         }
 
         // GET ALL Method
@@ -51,8 +49,24 @@ namespace Mini_Inventory_System.Controllers
             //var allCustomer = _dbContext.Customers.Where(c => !c.IsDeleted).ToList();
             return Ok(customers);
         }
-
-        // DELETE
+        // UPDATE Method
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateCustomerDto updateCustomerDto)
+        {
+            // Map DTO to Domain Model
+            var customerDomainModel = new Customer
+                {
+                    FullName = updateCustomerDto.FullName,
+                    Phone = updateCustomerDto.Phone,
+                    Email = updateCustomerDto.Email,
+                    LoyaltyPoints = updateCustomerDto.LoyaltyPoints
+                };
+            var updatedCustomer = await _customerRepository.UpdateCustomerAsync(id, customerDomainModel);
+            if (updatedCustomer == null)
+                return NotFound();
+            return Ok(updatedCustomer);
+        }
+        // DELETE Method
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id) 
         {

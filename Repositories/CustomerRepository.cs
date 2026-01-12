@@ -12,6 +12,7 @@ namespace Mini_Inventory_System.Repositories
         {
             _dbContext = dbContext;
         }
+
         public async Task<Customer> CreateCustomerAsync(Customer customer)
         {
             await _dbContext.Customers.AddAsync(customer);
@@ -34,6 +35,22 @@ namespace Mini_Inventory_System.Repositories
         public async Task<IEnumerable<Customer>> GetAllCustomersAsync()
         {
             return await _dbContext.Customers.ToListAsync();
+        }
+
+        public async Task<Customer?> UpdateCustomerAsync(int id, Customer customer)
+        {
+            var existingCustomer = await _dbContext.Customers.FirstOrDefaultAsync(x => x.CustomerId == id);
+            if (existingCustomer == null)
+            {
+                return null;
+            }
+            existingCustomer.FullName = customer.FullName;
+            existingCustomer.Phone = customer.Phone;
+            existingCustomer.Email = customer.Email;
+            existingCustomer.LoyaltyPoints = customer.LoyaltyPoints;
+
+            await _dbContext.SaveChangesAsync();
+            return existingCustomer;
         }
     }
 }
