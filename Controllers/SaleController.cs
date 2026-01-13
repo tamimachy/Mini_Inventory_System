@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Mini_Inventory_System.Data;
 using Mini_Inventory_System.Models.Domain;
 using Mini_Inventory_System.Models.DTO;
+using Mini_Inventory_System.Repositories;
 
 namespace Mini_Inventory_System.Controllers
 {
@@ -13,11 +14,13 @@ namespace Mini_Inventory_System.Controllers
     public class SalesController : ControllerBase
     {
         private readonly InventoryDbContext _dbContext;
+        private readonly ISaleRepository _saleRepository;
         private static SemaphoreSlim _semaphore = new SemaphoreSlim(3);
 
-        public SalesController(InventoryDbContext dbContext)
+        public SalesController(InventoryDbContext dbContext, ISaleRepository saleRepository)
         {
             _dbContext = dbContext;
+            _saleRepository = saleRepository;
         }
 
         [HttpPost]
@@ -28,14 +31,18 @@ namespace Mini_Inventory_System.Controllers
 
             try
             {
-                await Task.Delay(3000);
+                if(dto.SaleDetails == null || !dto.SaleDetails.Any())
+                    return BadRequest("Sale must have at least one item");
 
                 decimal total = 0;
                 var saleDetails = new List<SaleDetail>();
 
                 foreach (var item in dto.SaleDetails)
                 {
-                    var product = _dbContext.Products.Find(item.ProductId);
+                    var product = await _dbContext.Products.FindAsync(item.ProductId);
+                    if(product == null)
+                        return BadRequest($"Product with ID {item.ProductId} not found");
+                    
                     if (product.StockQty < item.Quantity)
                         return BadRequest("Insufficient stock");
 
@@ -60,10 +67,12 @@ namespace Mini_Inventory_System.Controllers
                     SaleDetails = saleDetails
                 };
 
-                await _dbContext.Sales.AddAsync(sale);
-                await _dbContext.SaveChangesAsync();
-
+                await _saleRepository.SaleCreateAsync(sale);
                 return Ok(sale);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
             finally
             {
